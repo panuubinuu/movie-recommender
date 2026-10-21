@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎬 Sign Up — Movie Recommender</title>
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        :root {
+            --bg: #0f0f1a; --surface: #1a1a2e; --surface2: #222240;
+            --accent: #e94560; --accent2: #0f3460; --gold: #f5c518;
+            --text: #eaeaea; --text-dim: #8888aa; --green: #2ecc71;
+            --red: #e74c3c; --radius: 12px;
+            --shadow: 0 8px 32px rgba(0,0,0,0.5);
+        }
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-image:
+                radial-gradient(ellipse at 20% 50%, rgba(233,69,96,0.08) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 50%, rgba(15,52,96,0.15) 0%, transparent 50%);
+        }
+
+        .auth-container { width: 100%; max-width: 480px; padding: 1.5rem; }
+
+        .auth-card {
+            background: var(--surface);
+            border-radius: 16px;
+            padding: 2.5rem 2rem;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--surface2);
+        }
+
+        .logo { text-align: center; margin-bottom: 1.8rem; }
+        .logo .icon { font-size: 3rem; margin-bottom: 0.5rem; }
+        .logo h1 { font-size: 1.6rem; font-weight: 700; }
+        .logo h1 span { color: var(--accent); }
+        .logo p { color: var(--text-dim); font-size: 0.9rem; margin-top: 0.3rem; }
+
+        /* ── Flash messages ─────────────────────────────── */
+        .flash-messages { margin-bottom: 1.5rem; }
+        .flash {
+            padding: 0.7rem 1rem;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .flash.error   { background: rgba(231,76,60,0.15); color: #e74c3c; border: 1px solid rgba(231,76,60,0.3); }
+        .flash.success { background: rgba(46,204,113,0.15); color: #2ecc71; border: 1px solid rgba(46,204,113,0.3); }
+        .flash.warning { background: rgba(241,196,15,0.15); color: #f1c40f; border: 1px solid rgba(241,196,15,0.3); }
+        .flash.info    { background: rgba(52,152,219,0.15); color: #3498db; border: 1px solid rgba(52,152,219,0.3); }
+
+        /* ── Form ───────────────────────────────────────── */
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+        @media (max-width: 500px) {
+            .form-row { grid-template-columns: 1fr; }
+        }
+
+        .form-group { margin-bottom: 1.1rem; }
+        .form-group label {
+            display: block;
+            font-size: 0.85rem;
+            color: var(--text-dim);
+            margin-bottom: 0.4rem;
+            font-weight: 600;
+        }
+        .form-group input[type="text"],
+        .form-group input[type="email"],
+        .form-group input[type="password"] {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            background: var(--bg);
+            border: 1.5px solid var(--surface2);
+            border-radius: 10px;
+            color: var(--text);
+            font-size: 0.95rem;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(233,69,96,0.15);
+        }
+        .form-group input::placeholder { color: #555570; }
+
+        .input-icon { position: relative; }
+        .input-icon .icon-left {
+            position: absolute; left: 0.8rem; top: 50%;
+            transform: translateY(-50%); font-size: 1rem;
+            color: var(--text-dim); pointer-events: none;
+        }
+        .input-icon input { padding-left: 2.5rem !important; }
+
+        .password-hint {
+            font-size: 0.75rem;
+            color: var(--text-dim);
+            margin-top: 0.3rem;
+        }
+
+        /* ── Consent Section ────────────────────────────── */
+        .consent-section {
+            background: var(--bg);
+            border: 1.5px solid var(--surface2);
+            border-radius: 12px;
+            padding: 1.2rem;
+            margin: 1.2rem 0;
+        }
+        .consent-section h4 {
+            font-size: 0.9rem;
+            color: var(--accent);
+            margin-bottom: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+        .consent-text {
+            max-height: 160px;
+            overflow-y: auto;
+            font-size: 0.8rem;
+            line-height: 1.6;
+            color: var(--text-dim);
+            margin-bottom: 1rem;
+            padding-right: 0.5rem;
+        }
+        .consent-text::-webkit-scrollbar { width: 4px; }
+        .consent-text::-webkit-scrollbar-track { background: transparent; }
+        .consent-text::-webkit-scrollbar-thumb { background: var(--surface2); border-radius: 2px; }
+
+        .consent-text h5 {
+            color: var(--text);
+            font-size: 0.82rem;
+            margin: 0.8rem 0 0.3rem 0;
+        }
+        .consent-text h5:first-child { margin-top: 0; }
+        .consent-text ul {
+            margin-left: 1.2rem;
+            margin-bottom: 0.5rem;
+        }
+        .consent-text ul li { margin-bottom: 0.2rem; }
+
+        .consent-checkbox {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.6rem;
+            cursor: pointer;
+        }
+        .consent-checkbox input[type="checkbox"] {
+            appearance: none;
+            width: 20px; height: 20px;
+            min-width: 20px;
+            border: 2px solid var(--surface2);
+            border-radius: 4px;
+            background: var(--bg);
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-top: 2px;
+        }
+        .consent-checkbox input[type="checkbox"]:checked {
+            background: var(--accent);
+            border-color: var(--accent);
+        }
+        .consent-checkbox input[type="checkbox"]:checked::after {
+            content: '✓';
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-size: 0.75rem;
+            font-weight: 800;
+            width: 100%; height: 100%;
+        }
+        .consent-checkbox input[type="checkbox"]:focus {
+            box-shadow: 0 0 0 3px rgba(233,69,96,0.2);
+        }
+        .consent-checkbox .label-text {
+            font-size: 0.85rem;
+            color: var(--text);
+            line-height: 1.4;
+        }
+        .consent-checkbox .label-text a {
+            color: var(--accent);
+            text-decoration: none;
+        }
+        .consent-checkbox .label-text a:hover { text-decoration: underline; }
+
+        .btn-submit {
+            width: 100%;
+            padding: 0.85rem;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: linear-gradient(135deg, var(--accent), #c0392b);
+            color: #fff;
+            box-shadow: 0 4px 16px rgba(233,69,96,0.3);
+            margin-top: 0.5rem;
+        }
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 24px rgba(233,69,96,0.5);
+        }
+        .btn-submit:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .switch-link {
+            text-align: center;
+            margin-top: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--text-dim);
+        }
+        .switch-link a {
+            color: var(--accent);
+            text-decoration: none;
+            font-weight: 600;
+        }
+        .switch-link a:hover { text-decoration: underline; }
+
+        footer {
+            text-align: center;
+            margin-top: 1.5rem;
+            color: var(--text-dim);
+            font-size: 0.75rem;
+        }
+    </style>
+</head>
+<body>
+
+<div class="auth-container">
+    <div class="auth-card">
+        <div class="logo">
+            <div class="icon">🎬</div>
+            <h1>Create <span>Account</span></h1>
+            <p>Join to get personalized movie recommendations</p>
+        </div>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        <div class="flash-messages">
+            {% for category, message in messages %}
+            <div class="flash {{ category }}">{{ message }}</div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        {% endwith %}
+
+        <form method="POST" action="{{ url_for('signup') }}" id="signup-form">
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="full_name">Full Name</label>
+                    <div class="input-icon">
+                        <span class="icon-left">👤</span>
+                        <input type="text" id="full_name" name="full_name" placeholder="John Doe" required />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="username">Username</label>
+                    <div class="input-icon">
+                        <span class="icon-left">🆔</span>
+                        <input type="text" id="username" name="username" placeholder="johndoe" required minlength="3" autocomplete="username" />
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="email">Email Address</label>
+                <div class="input-icon">
+                    <span class="icon-left">📧</span>
+                    <input type="email" id="email" name="email" placeholder="john@example.com" required autocomplete="email" />
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <div class="input-icon">
+                        <span class="icon-left">🔒</span>
+                        <input type="password" id="password" name="password" placeholder="••••••••" required minlength="6" autocomplete="new-password" />
+                    </div>
+                    <div class="password-hint">Minimum 6 characters</div>
+                </div>
+                <div class="form-group">
+                    <label for="confirm_password">Confirm Password</label>
+                    <div class="input-icon">
+                        <span class="icon-left">🔒</span>
+                        <input type="password" id="confirm_password" name="confirm_password" placeholder="••••••••" required minlength="6" autocomplete="new-password" />
+                    </div>
+                </div>
+            </div>
+
+            <!-- ═══ Consent Section ═══ -->
+            <div class="consent-section">
+                <h4>📋 Terms of Service & Privacy Policy</h4>
+                <div class="consent-text">
+                    <h5>Terms of Service</h5>
+                    <p>By creating an account on the Movie Recommender platform, you agree to the following terms:</p>
+                    <ul>
+                        <li>You must be at least 13 years of age to use this service.</li>
+                        <li>You are responsible for maintaining the confidentiality of your account credentials.</li>
+                        <li>The recommendations provided are generated using a rule-based system and do not constitute professional advice.</li>
+                        <li>You agree not to misuse the service, attempt to gain unauthorized access, or interfere with its operation.</li>
+                        <li>We reserve the right to suspend or terminate accounts that violate these terms.</li>
+                    </ul>
+
+                    <h5>Privacy Policy</h5>
+                    <p>We are committed to protecting your personal data:</p>
+                    <ul>
+                        <li><strong>Data Collected:</strong> We collect your name, email address, username, and movie preferences that you voluntarily provide.</li>
+                        <li><strong>Purpose:</strong> Your data is used solely to provide personalized movie recommendations and to manage your account.</li>
+                        <li><strong>Storage:</strong> Your password is stored in a securely hashed format. We never store plain-text passwords.</li>
+                        <li><strong>Sharing:</strong> We do not sell, trade, or share your personal data with third parties.</li>
+                        <li><strong>Cookies:</strong> We use session cookies to keep you logged in. No tracking cookies are used.</li>
+                        <li><strong>Data Deletion:</strong> You may request deletion of your account and associated data at any time by contacting the administrator.</li>
+                        <li><strong>Security:</strong> We implement industry-standard security measures to protect your information against unauthorized access.</li>
+                    </ul>
+
+                    <h5>Consent</h5>
+                    <p>By checking the box below and creating your account, you acknowledge that you have read, understood, and agree to be bound by these Terms of Service and Privacy Policy. You also consent to the collection and processing of your personal data as described above.</p>
+                </div>
+
+                <label class="consent-checkbox">
+                    <input type="checkbox" name="consent" id="consent" required />
+                    <span class="label-text">
+                        I have read and agree to the <a href="#" onclick="event.preventDefault(); document.querySelector('.consent-text').scrollTop=0;">Terms of Service</a> and
+                        <a href="#" onclick="event.preventDefault(); document.querySelector('.consent-text').scrollTo({top:300,behavior:'smooth'});">Privacy Policy</a>.
+                        I consent to the collection and processing of my personal data as described.
+                    </span>
+                </label>
+            </div>
+
+            <button type="submit" class="btn-submit" id="submit-btn">🎬 Create Account</button>
+        </form>
+
+        <div class="switch-link">
+            Already have an account? <a href="{{ url_for('login') }}">Sign in</a>
+        </div>
+    </div>
+
+    <footer>
+        Rule-Based Movie Recommendation System &bull; No ML Required
+    </footer>
+</div>
+
+<script>
+    // Password match validation
+    const form = document.getElementById('signup-form');
+    const password = document.getElementById('password');
+    const confirm = document.getElementById('confirm_password');
+
+    form.addEventListener('submit', function(e) {
+        if (password.value !== confirm.value) {
+            e.preventDefault();
+            confirm.setCustomValidity('Passwords do not match');
+            confirm.reportValidity();
+        }
+    });
+
+    confirm.addEventListener('input', function() {
+        if (password.value !== confirm.value) {
+            confirm.setCustomValidity('Passwords do not match');
+        } else {
+            confirm.setCustomValidity('');
+        }
+    });
+    password.addEventListener('input', function() {
+        if (confirm.value && password.value !== confirm.value) {
+            confirm.setCustomValidity('Passwords do not match');
+        } else {
+            confirm.setCustomValidity('');
+        }
+    });
+</script>
+
+</body>
+</html>
